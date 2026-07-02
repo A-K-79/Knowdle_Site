@@ -18,3 +18,26 @@ build/
 
 # Vite cache
 .vite/
+
+# Python
+**/__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+**/venv/
+
+# Database
+*.sqlite3
+
+# Environment variables
+.env
+
+# Media (optional)
+media/
+**/media/
+
+# VS Code
+.vscode/
+
+
