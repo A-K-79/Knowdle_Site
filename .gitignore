@@ -30,9 +30,6 @@ venv/
 # Database
 *.sqlite3
 
-# Environment variables
-.env
-
 # Media (optional)
 media/
 **/media/
