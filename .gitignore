@@ -1,0 +1,41 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Vite cache
+.vite/
+
+# Python
+**/__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+**/venv/
+
+# Database
+*.sqlite3
+
+# Environment variables
+.env
+
+# Media (optional)
+media/
+**/media/
+
+# VS Code
+.vscode/
