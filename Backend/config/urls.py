@@ -27,6 +27,7 @@ urlpatterns = [
     path("auth/", include("authentication.urls")),
     path("login/", login_view),  # function-based DRF view
     path("api/profile/", include("users.urls")),
+    path("api/follow/", include("follow.urls")),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
