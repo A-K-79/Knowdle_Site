@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     'users',
     'authentication',
-    'follow'
+    'follow',
+    'ai'
 ]
 
 MIDDLEWARE = [
@@ -144,3 +145,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ]
 }
+# This lets your project read the .env file.
+
+from dotenv import load_dotenv
+load_dotenv()
