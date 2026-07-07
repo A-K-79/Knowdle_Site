@@ -6,6 +6,8 @@ from rest_framework.permissions import AllowAny
 
 from django.contrib.auth.models import User
 from users.models import Profile
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import logout
 
 # from rest_framework.decorators import api_view
 
@@ -21,6 +23,7 @@ from users.models import Profile
 #     return Response({"error": "Invalid credentials"}, status=400)
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def login_view(request):
     username = request.data.get("username")
     password = request.data.get("password")
@@ -60,3 +63,14 @@ def register_view(request):
     )
 
     return Response({"message": "User registered successfully"})
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def logout_view(request):
+    # Clear Django session
+    logout(request)
+
+    # Delete the token so it can't be reused
+    request.user.auth_token.delete()
+
+    return Response({"message": "Successfully logged out"})
