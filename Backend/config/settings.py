@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework.authtoken",
     'users',
-    'authentication'
+    'authentication',
+    "admin_panel",
 ]
 
 MIDDLEWARE = [
