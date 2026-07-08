@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'users',
     'authentication',
     'follow',
-    'ai'
+    'ai',
     "admin_panel",
 ]
 
