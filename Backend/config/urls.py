@@ -37,9 +37,10 @@ urlpatterns = [
     path("api/content/", include("content.urls")),
 
     #AI Summarizer route
-    path("api/ai/", include("ai.urls")),
+  #  path("api/ai/", include("ai.urls")),
     # admin panel routes
     path("api/admin/", include("admin_panel.urls")),
+    path("api/search/", include("search.urls")),
 ]
 
 # MEDIA FILES

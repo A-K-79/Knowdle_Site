@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'follow',
     'ai',
     "admin_panel",
+    "search",
 ]
 
 MIDDLEWARE = [
@@ -166,11 +167,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 #         "rest_framework.permissions.IsAuthenticated",
 #     ],
 # }
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
-    ]
-}
+
 # This lets your project read the .env file.
 
 from dotenv import load_dotenv
