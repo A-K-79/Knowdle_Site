@@ -43,9 +43,17 @@ def login_view(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register_view(request):
-    username = request.data.get("username")
-    password = request.data.get("password")
-    email = request.data.get("email")
+    name = request.data.get("name", "").strip()
+    username = request.data.get("username", "").strip()
+    password = request.data.get("password", "").strip()
+    email = request.data.get("email", "").strip()
+
+    if not name:
+        return Response({"error": "Name is required"}, status=400)
+    if not username:
+        return Response({"error": "Username is required"}, status=400)
+    if not password:
+        return Response({"error": "Password is required"}, status=400)
 
     if User.objects.filter(username=username).exists():
         return Response({"error": "Username already exists"}, status=400)
@@ -56,10 +64,10 @@ def register_view(request):
         password=password
     )
 
-    # Create an empty profile for the new user
+    # Create profile with registered name
     Profile.objects.create(
         user=user,
-        name=username
+        name=name
     )
 
     return Response({"message": "User registered successfully"})

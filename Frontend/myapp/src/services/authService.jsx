@@ -1,14 +1,12 @@
-import axios from "axios";
-
-const API_URL = "http://localhost:8000/auth/";
+import API from "./api";
 
 export const login = async (username, password) => {
   try {
-    const response = await axios.post(`${API_URL}login/`, { username, password });
+    const response = await API.post("/auth/login/", { username, password });
     const { token, username: user } = response.data;
 
-    // Save token for later requests
     localStorage.setItem("authToken", token);
+    localStorage.setItem("username", user);
 
     return { token, user };
   } catch (error) {
@@ -16,11 +14,22 @@ export const login = async (username, password) => {
   }
 };
 
-// Example of using token for protected requests
-export const getProfile = async () => {
-  const token = localStorage.getItem("authToken");
-  const response = await axios.get(`${API_URL}profile/`, {
-    headers: { Authorization: `Token ${token}` },
-  });
-  return response.data;
+export const register = async (username, email, password, name) => {
+  try {
+    const response = await API.post("/auth/register/", { username, email, password, name });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: "Registration failed" };
+  }
+};
+
+export const logout = async () => {
+  try {
+    await API.post("/auth/logout/");
+  } catch (error) {
+    console.error("Logout failed on server:", error);
+  } finally {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("username");
+  }
 };

@@ -1,0 +1,129 @@
+.search-container {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e4e6eb;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  margin-top: 6px;
+  z-index: 9999;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.search-dropdown-section {
+  padding: 5px 0;
+}
+
+.search-dropdown-section h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 6px 16px 2px 16px;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.section-divider {
+  height: 1px;
+  background: #f0f2f5;
+  margin: 4px 16px 8px 16px;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.search-result-item:hover {
+  background: #f0f2f5;
+}
+
+.result-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.result-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.result-username {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.result-name {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.post-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.result-caption {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-author {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.search-spinner {
+  position: absolute;
+  right: 34px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+  z-index: 10;
+}
+
+.search-clear-btn:hover {
+  color: var(--neon-rose);
+  transform: translateY(-50%) scale(1.15);
+}
+

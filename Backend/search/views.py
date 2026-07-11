@@ -1,11 +1,55 @@
 from django.contrib.auth.models import User
 
 from rest_framework.generics import ListAPIView
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from users.models import Profile
 from content.models import Content
 from content.serializers import ContentSerializer
+
+
+# -------------------------
+# UNIFIED LIVE SEARCH
+# -------------------------
+class UnifiedSearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get("q", "").strip()
+        if not query:
+            return Response({"users": [], "posts": []})
+
+        profiles = Profile.objects.filter(user__username__icontains=query)[:6]
+        users_data = [
+            {
+                "id": profile.user.id,
+                "username": profile.user.username,
+                "name": profile.name,
+                "profile_picture": (
+                    profile.profile_picture.url
+                    if profile.profile_picture else None
+                ),
+            }
+            for profile in profiles
+        ]
+
+        posts = Content.objects.filter(caption__icontains=query, is_active=True)[:6]
+        posts_data = [
+            {
+                "id": post.id,
+                "caption": post.caption,
+                "owner_username": post.owner.username,
+            }
+            for post in posts
+        ]
+
+        return Response({
+            "users": users_data,
+            "posts": posts_data
+        })
+
 
 
 # -------------------------
