@@ -152,3 +152,16 @@ export const getTeamAiSummary = async (teamId) => {
     throw error.response?.data || { error: "Failed to generate AI summary." };
   }
 };
+
+// Delete a team chat message
+export const deleteTeamMessage = async (teamId, messageId, deleteType = "me") => {
+  try {
+    const response = await API.post(`/api/teams/${teamId}/delete-message/`, { 
+      message_id: messageId,
+      delete_type: deleteType
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: "Failed to delete message." };
+  }
+};

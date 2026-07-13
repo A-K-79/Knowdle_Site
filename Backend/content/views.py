@@ -54,11 +54,13 @@ class FeedView(generics.ListAPIView):
         # Filter by category
         category = self.request.query_params.get("category", "all").lower()
         if category == "friends":
+            # Followers-only posts (from followed users or self)
             return Content.objects.filter(
-                team__team_type=TeamType.FRIENDS,
-                team__members=user,
+                Q(owner=user) | Q(owner__followers__follower=user),
+                is_followers_only=True,
+                team=None,
                 is_active=True
-            ).order_by("-created_at")
+            ).distinct().order_by("-created_at")
         elif category == "study":
             return Content.objects.filter(
                 team__team_type=TeamType.STUDY,
@@ -72,9 +74,11 @@ class FeedView(generics.ListAPIView):
                 is_active=True
             ).order_by("-created_at")
         else:
-            # "all" category: Public posts + user's joined team posts
+            # "all" category: Public posts + followers-only (private) posts from followed users + own private posts
             return Content.objects.filter(
-                Q(team=None) | Q(team__members=user),
+                Q(team=None, is_followers_only=False) | # Public
+                Q(team=None, is_followers_only=True, owner__followers__follower=user) | # Followed users' private posts
+                Q(owner=user, is_followers_only=True), # My private posts
                 is_active=True
             ).distinct().order_by("-created_at")
 

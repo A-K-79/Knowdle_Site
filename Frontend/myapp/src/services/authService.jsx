@@ -3,10 +3,13 @@ import API from "./api";
 export const login = async (username, password) => {
   try {
     const response = await API.post("/auth/login/", { username, password });
-    const { token, username: user } = response.data;
+    const { token, username: user, user_id } = response.data;
 
     localStorage.setItem("authToken", token);
     localStorage.setItem("username", user);
+    if (user_id) {
+      localStorage.setItem("userId", user_id.toString());
+    }
 
     return { token, user };
   } catch (error) {
@@ -31,5 +34,6 @@ export const logout = async () => {
   } finally {
     localStorage.removeItem("authToken");
     localStorage.removeItem("username");
+    localStorage.removeItem("userId");
   }
 };

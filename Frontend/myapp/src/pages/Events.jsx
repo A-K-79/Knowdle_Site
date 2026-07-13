@@ -2,7 +2,9 @@ import { useEffect, useState, useRef } from "react";
 import Navbar from "../components/Navbar";
 import LeftSidebar from "../components/LeftSidebar";
 import { getProfile } from "../services/profileService";
-import { getEvents, createEvent } from "../services/eventService";
+import { getEvents, createEvent, deleteEvent } from "../services/eventService";
+import { getTeams } from "../services/teamService";
+import { createPost } from "../services/postService";
 import "../styles/Events.css";
 
 function Events() {
@@ -12,6 +14,15 @@ function Events() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("explore"); // 'explore' | 'host'
   const [filterType, setFilterType] = useState("ALL"); // 'ALL' | 'HACKATHON' | 'WORKSHOP' | 'PLACEMENT'
+
+  // Share Event to Team States
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedEventToShare, setSelectedEventToShare] = useState(null);
+  const [joinedTeams, setJoinedTeams] = useState([]);
+  const [selectedTeamToShareId, setSelectedTeamToShareId] = useState("");
+  const [customShareCaption, setCustomShareCaption] = useState("");
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareVisibility, setShareVisibility] = useState("TEAM"); // 'PUBLIC' | 'FRIENDS' | 'TEAM'
 
   // Host Event Form States
   const [title, setTitle] = useState("");
@@ -31,6 +42,7 @@ function Events() {
   useEffect(() => {
     fetchProfileData();
     fetchEventsData();
+    fetchJoinedTeams();
   }, []);
 
   const fetchProfileData = async () => {
@@ -39,6 +51,15 @@ function Events() {
       setProfile(data);
     } catch (err) {
       console.error("Failed to load profile:", err);
+    }
+  };
+
+  const fetchJoinedTeams = async () => {
+    try {
+      const data = await getTeams();
+      setJoinedTeams(data);
+    } catch (err) {
+      console.error("Failed to load joined teams:", err);
     }
   };
 
@@ -99,6 +120,81 @@ function Events() {
       setHostError(err.error || "Failed to publish event.");
     } finally {
       setHostLoading(false);
+    }
+  };
+
+  const handleOpenShareModal = (event) => {
+    setSelectedEventToShare(event);
+    const regUrl = event.registration_link 
+      ? (event.registration_link.startsWith("http") ? event.registration_link : `https://${event.registration_link}`)
+      : "http://127.0.0.1:5173/events";
+
+    setCustomShareCaption(
+      `📢 Event Announcement: ${event.title}\n\n🗓️ Date: ${formatEventDate(event.date)}\n📍 Location: ${event.location}\n\n${event.description}\n\n🔗 Registration Link: ${regUrl}`
+    );
+    setShareVisibility("TEAM");
+    if (joinedTeams.length > 0) {
+      setSelectedTeamToShareId(joinedTeams[0].id.toString());
+    } else {
+      setSelectedTeamToShareId("");
+    }
+    setShowShareModal(true);
+  };
+
+  const handleShareSubmit = async (e) => {
+    e.preventDefault();
+    if (shareVisibility === "TEAM" && !selectedTeamToShareId) {
+      alert("Please select a team to share this event with.");
+      return;
+    }
+    setShareLoading(true);
+
+    const formData = new FormData();
+    formData.append("caption", customShareCaption);
+    formData.append("media_type", selectedEventToShare.banner ? "IMAGE" : "TEXT");
+    
+    if (shareVisibility === "TEAM") {
+      formData.append("team", selectedTeamToShareId);
+    }
+    formData.append("is_followers_only", shareVisibility === "FRIENDS" ? "true" : "false");
+
+    if (selectedEventToShare.banner) {
+      try {
+        const bannerUrl = selectedEventToShare.banner.startsWith("http")
+          ? selectedEventToShare.banner
+          : `http://127.0.0.1:8000${selectedEventToShare.banner}`;
+        const res = await fetch(bannerUrl);
+        const blob = await res.blob();
+        const file = new File([blob], "event_banner.jpg", { type: blob.type });
+        formData.append("media_file", file);
+      } catch (err) {
+        console.error("Failed to append banner file, sharing as text post instead:", err);
+        formData.set("media_type", "TEXT");
+      }
+    }
+
+    try {
+      await createPost(formData);
+      alert("Successfully shared the event!");
+      setShowShareModal(false);
+      setSelectedEventToShare(null);
+    } catch (err) {
+      console.error(err);
+      alert(err.error || "Failed to share event.");
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    if (!window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) return;
+    try {
+      await deleteEvent(eventId);
+      alert("Event deleted successfully!");
+      await fetchEventsData();
+    } catch (err) {
+      console.error(err);
+      alert(err.error || "Failed to delete event.");
     }
   };
 
@@ -239,9 +335,39 @@ function Events() {
                               <span>{getEventBadgeLabel(ev.event_type)}</span>
                             </div>
                           )}
-                          <span className={`event-card-type-badge ${getEventBadgeClass(ev.event_type)}`}>
+                           <span className={`event-card-type-badge ${getEventBadgeClass(ev.event_type)}`}>
                             {getEventBadgeLabel(ev.event_type)}
                           </span>
+
+                          {profile && profile.is_staff && (
+                            <button
+                              className="event-delete-btn"
+                              onClick={(e) => { e.stopPropagation(); handleDeleteEvent(ev.id); }}
+                              title="Delete Event"
+                              style={{
+                                position: 'absolute',
+                                top: '10px',
+                                right: '10px',
+                                background: 'rgba(255, 255, 255, 0.9)',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '32px',
+                                height: '32px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                                zIndex: 10,
+                                transition: 'transform 0.2s ease'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1.0)'}
+                            >
+                              🗑️
+                            </button>
+                          )}
                         </div>
 
                         <div className="event-card-body">
@@ -311,6 +437,24 @@ function Events() {
                                 ⚠️ Deadline Passed. Registration may be closed.
                               </p>
                             )}
+                            {/* Share to team action */}
+                            <button
+                              className="btn-secondary btn-share-to-team"
+                              onClick={() => handleOpenShareModal(ev)}
+                              style={{
+                                width: '100%',
+                                marginTop: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px',
+                                fontSize: '13px',
+                                fontWeight: '700',
+                                padding: '10px'
+                              }}
+                            >
+                              📢 Share to Team
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -470,6 +614,90 @@ function Events() {
           )}
         </div>
       </div>
+
+      {/* Share Event to Team Modal Overlay */}
+      {showShareModal && selectedEventToShare && (
+        <div className="share-event-modal-overlay" onClick={() => { setShowShareModal(false); setSelectedEventToShare(null); }}>
+          <div className="share-event-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="share-modal-header">
+              <h3>📢 Share Event to Team Feed</h3>
+              <button className="share-modal-close-btn" onClick={() => { setShowShareModal(false); setSelectedEventToShare(null); }}>✕</button>
+            </div>
+
+            <form onSubmit={handleShareSubmit} className="share-modal-form">
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label style={{ fontWeight: '700', fontSize: '13px', marginBottom: '6px', display: 'block' }}>Share Visibility</label>
+                <select
+                  value={shareVisibility}
+                  onChange={(e) => {
+                    setShareVisibility(e.target.value);
+                    setSelectedTeamToShareId(joinedTeams.length > 0 ? joinedTeams[0].id.toString() : "");
+                  }}
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}
+                >
+                  <option value="TEAM">👥 Teams</option>
+                  <option value="PUBLIC">🌍 Public</option>
+                  <option value="FRIENDS">🔒 Private</option>
+                </select>
+              </div>
+
+              {shareVisibility === "TEAM" && (
+                <div className="form-group" style={{ marginBottom: '16px' }}>
+                  <label style={{ fontWeight: '700', fontSize: '13px', marginBottom: '6px', display: 'block' }}>Select Team Workspace</label>
+                  {joinedTeams.length === 0 ? (
+                    <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                      You have not joined any teams yet. You must join a team to share events.
+                    </p>
+                  ) : (
+                    <select
+                      value={selectedTeamToShareId}
+                      onChange={(e) => setSelectedTeamToShareId(e.target.value)}
+                      required
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}
+                    >
+                      {joinedTeams.map((team) => (
+                        <option key={team.id} value={team.id.toString()}>
+                          {team.name} ({team.team_type})
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              )}
+
+              <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label style={{ fontWeight: '700', fontSize: '13px', marginBottom: '6px', display: 'block' }}>Custom Post Caption</label>
+                <textarea
+                  value={customShareCaption}
+                  onChange={(e) => setCustomShareCaption(e.target.value)}
+                  rows={6}
+                  required
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical' }}
+                  placeholder="Add custom notes to this event announcement..."
+                />
+              </div>
+
+              <div className="share-modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => { setShowShareModal(false); setSelectedEventToShare(null); }}
+                  disabled={shareLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={shareLoading || joinedTeams.length === 0}
+                >
+                  {shareLoading ? "Sharing..." : "Share Now 🚀"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

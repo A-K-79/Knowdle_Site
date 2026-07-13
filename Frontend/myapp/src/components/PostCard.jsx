@@ -79,8 +79,35 @@ function PostCard({ post, onDelete, onSaveToggle, isAdminView = false }) {
     });
   };
 
-  const isOwner = post.owner_username === currentUsername;
-  const isTeamOwner = post.team_owner_username === currentUsername;
+  const renderTextWithLinks = (text) => {
+    if (!text) return "";
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    return parts.map((part, index) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a 
+            key={index} 
+            href={part} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ color: 'var(--accent-primary)', textDecoration: 'underline', wordBreak: 'break-all' }}
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
+  const currentUserId = localStorage.getItem("userId");
+
+  const isOwner = 
+    (post.owner_username && currentUsername && post.owner_username.toLowerCase() === currentUsername.toLowerCase()) ||
+    (post.owner && currentUserId && post.owner.toString() === currentUserId.toString());
+
+  const isTeamOwner = post.team_owner_username && currentUsername && post.team_owner_username.toLowerCase() === currentUsername.toLowerCase();
   const canDelete = isOwner || isTeamOwner || isAdminView;
 
   const handleProfileClick = () => {
@@ -116,6 +143,11 @@ function PostCard({ post, onDelete, onSaveToggle, isAdminView = false }) {
                   👥 {post.team_name}
                 </span>
               )}
+              {post.is_followers_only && (
+                <span className="post-type-badge post-type-private" style={{ background: 'rgba(245, 158, 11, 0.08)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.15)' }} title="Private Post">
+                  🔒 Private
+                </span>
+              )}
             </div>
             <span className="post-date">{formatDate(post.created_at)}</span>
           </div>
@@ -129,7 +161,7 @@ function PostCard({ post, onDelete, onSaveToggle, isAdminView = false }) {
       </div>
 
       <div className="post-body">
-        {post.caption && <p className="post-caption">{post.caption}</p>}
+        {post.caption && <p className="post-caption" style={{ whiteSpace: 'pre-wrap' }}>{renderTextWithLinks(post.caption)}</p>}
 
         {post.media_file && post.media_type === "IMAGE" && (
           <div className="post-media-container">

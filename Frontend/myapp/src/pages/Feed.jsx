@@ -38,7 +38,7 @@ function Feed() {
         onClick={() => setSidebarOpen(true)}
         title="Open AI Assistant & Trends"
       >
-        🤖 <span className="fab-label">AI & Trends</span>
+         <span className="fab-label">🤖</span>
       </button>
     </>
   );

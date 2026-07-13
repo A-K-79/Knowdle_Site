@@ -108,6 +108,8 @@ class TeamMessage(models.Model):
         related_name="team_messages"
     )
     text = models.TextField()
+    is_deleted = models.BooleanField(default=False)
+    deleted_for_users = models.ManyToManyField(User, blank=True, related_name="deleted_team_messages")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

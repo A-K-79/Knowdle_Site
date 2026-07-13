@@ -173,7 +173,7 @@ class TeamViewSet(viewsets.ModelViewSet):
             return Response({"error": "You must be a member to access team chat."}, status=status.HTTP_403_FORBIDDEN)
 
         if request.method == "GET":
-            msgs = team.messages.all().order_by("created_at")
+            msgs = team.messages.exclude(deleted_for_users=request.user).order_by("created_at")
             serializer = TeamMessageSerializer(msgs, many=True, context={"request": request})
             return Response(serializer.data)
 
@@ -189,6 +189,45 @@ class TeamViewSet(viewsets.ModelViewSet):
             )
             serializer = TeamMessageSerializer(msg, context={"request": request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="delete-message")
+    def delete_message(self, request, pk=None):
+        team = self.get_object_or_404(pk)
+        message_id = request.data.get("message_id")
+        delete_type = request.data.get("delete_type", "me")  # "everyone" or "me"
+        
+        try:
+            msg = team.messages.get(id=message_id)
+        except TeamMessage.DoesNotExist:
+            return Response({"error": "Message not found in this team."}, status=status.HTTP_404_NOT_FOUND)
+            
+        # Verify user is a member
+        if not team.members.filter(id=request.user.id).exists():
+            return Response({"error": "You must be a member to delete messages."}, status=status.HTTP_403_FORBIDDEN)
+            
+        if delete_type == "me":
+            # Add this user to deleted_for_users to hide it
+            msg.deleted_for_users.add(request.user)
+            return Response({"message": "Message deleted for me successfully."})
+            
+        elif delete_type == "everyone":
+            # Verify 12-hour limit
+            from django.utils import timezone
+            time_difference = timezone.now() - msg.created_at
+            if time_difference.total_seconds() > 12 * 3600:
+                return Response({"error": "You can no longer delete this message for everyone. The 12-hour limit has passed."}, status=status.HTTP_400_BAD_REQUEST)
+                
+            # Verify authorization (sender or team owner)
+            if msg.sender != request.user and team.owner != request.user:
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("You are not authorized to delete this message.")
+                
+            msg.is_deleted = True
+            msg.text = "This message was deleted"
+            msg.save()
+            return Response({"message": "Message deleted for everyone successfully."})
+            
+        return Response({"error": "Invalid delete type."}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=["post"], url_path="ai-summary")
     def ai_summary(self, request, pk=None):
