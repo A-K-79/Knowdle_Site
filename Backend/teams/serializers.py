@@ -93,6 +93,7 @@ class TeamMessageSerializer(serializers.ModelSerializer):
             "sender",
             "sender_details",
             "text",
+            "is_deleted",
             "created_at"
         ]
         read_only_fields = ["sender"]

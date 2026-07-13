@@ -23,3 +23,13 @@ export const createEvent = async (formData) => {
     throw error.response?.data || { error: "Failed to create event." };
   }
 };
+
+// Delete an event
+export const deleteEvent = async (eventId) => {
+  try {
+    const response = await API.delete(`/api/events/${eventId}/`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: "Failed to delete event." };
+  }
+};

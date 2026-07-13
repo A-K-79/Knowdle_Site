@@ -26,6 +26,12 @@ function Navbar({ onOpenSidebar }) {
             try {
                 const profile = await getProfile();
                 setIsStaff(profile.is_staff);
+                if (profile.username) {
+                    localStorage.setItem("username", profile.username);
+                }
+                if (profile.user_id) {
+                    localStorage.setItem("userId", profile.user_id.toString());
+                }
                 if (profile.profile_picture) {
                     setAvatarUrl(`http://127.0.0.1:8000${profile.profile_picture}`);
                 }
@@ -154,7 +160,7 @@ function Navbar({ onOpenSidebar }) {
     return (
         <nav className="navbar glass-panel">
             <div className="logo" onClick={() => navigate("/feed")} style={{ cursor: "pointer" }}>
-                <span>📚</span> <span className="gradient-text">StudyPulse</span>
+                <span>📚</span> <span className="gradient-text">KNOWDLE</span>
             </div>
 
             <LiveSearch />

@@ -38,7 +38,7 @@ function FeedContent() {
 
   // Teams & Visibility State
   const [joinedTeams, setJoinedTeams] = useState([]);
-  const [visibilityType, setVisibilityType] = useState("PUBLIC"); // 'PUBLIC' | 'FRIENDS' | 'STUDY' | 'PROFESSIONAL'
+  const [visibilityType, setVisibilityType] = useState("PUBLIC"); // 'PUBLIC' | 'FRIENDS' | 'TEAM'
   const [selectedTeamId, setSelectedTeamId] = useState("");
   const [feedCategory, setFeedCategory] = useState("all"); // 'all' | 'friends' | 'study' | 'professional'
 
@@ -171,7 +171,7 @@ const getVideoDuration = (file) => {
       }
     }
 
-    if (visibilityType !== "PUBLIC" && !selectedTeamId) {
+    if (visibilityType === "TEAM" && !selectedTeamId) {
       setCreateError("Please select a specific team for this visibility setting.");
       setCreateLoading(false);
       return;
@@ -183,9 +183,11 @@ const getVideoDuration = (file) => {
     if (mediaFile) {
       formData.append("media_file", mediaFile);
     }
-    if (visibilityType !== "PUBLIC" && selectedTeamId) {
+    
+    if (visibilityType === "TEAM" && selectedTeamId) {
       formData.append("team", selectedTeamId);
     }
+    formData.append("is_followers_only", visibilityType === "FRIENDS" ? "true" : "false");
 
     try {
       await createPost(formData);
@@ -286,12 +288,11 @@ const getVideoDuration = (file) => {
                 disabled={createLoading}
               >
                 <option value="PUBLIC">🌍 Public</option>
-                <option value="FRIENDS">👥 Friends Team</option>
-                <option value="STUDY">📚 Study Team</option>
-                <option value="PROFESSIONAL">💼 Professional Team</option>
+                <option value="FRIENDS">🔒 Private</option>
+                <option value="TEAM">👥 Teams</option>
               </select>
 
-              {visibilityType !== "PUBLIC" && (
+              {visibilityType === "TEAM" && (
                 <select
                   value={selectedTeamId}
                   onChange={(e) => setSelectedTeamId(e.target.value)}
@@ -301,10 +302,10 @@ const getVideoDuration = (file) => {
                 >
                   <option value="">-- Choose Team --</option>
                   {joinedTeams
-                    .filter((t) => t.team_type === visibilityType)
+                    .filter((t) => t.team_type === "STUDY" || t.team_type === "PROFESSIONAL")
                     .map((t) => (
                       <option key={t.id} value={t.id}>
-                        {t.name}
+                        {t.name} ({t.team_type})
                       </option>
                     ))}
                 </select>

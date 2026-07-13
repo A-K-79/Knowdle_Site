@@ -16,6 +16,7 @@ import {
   getTeamMessages,
   sendTeamMessage,
   getTeamAiSummary,
+  deleteTeamMessage,
 } from "../services/teamService";
 import "../styles/Teams.css";
 
@@ -40,6 +41,10 @@ function TeamDetail() {
   const [chatLoading, setChatLoading] = useState(false);
   const [chatSendLoading, setChatSendLoading] = useState(false);
   const chatEndRef = useRef(null);
+
+  // Chat Message Delete States
+  const [activeDeleteMessage, setActiveDeleteMessage] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Invitation & member states
   const [inviteUsername, setInviteUsername] = useState("");
@@ -163,6 +168,31 @@ function TeamDetail() {
       alert(err.error || "Failed to send message.");
     } finally {
       setChatSendLoading(false);
+    }
+  };
+
+  const triggerDeleteMessage = (msg) => {
+    setActiveDeleteMessage(msg);
+    setShowDeleteModal(true);
+  };
+
+  const executeDeleteMessage = async (messageId, deleteType) => {
+    try {
+      await deleteTeamMessage(id, messageId, deleteType);
+      if (deleteType === "me") {
+        setChatMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+      } else {
+        setChatMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === messageId ? { ...msg, is_deleted: true, text: "This message was deleted" } : msg
+          )
+        );
+      }
+      setShowDeleteModal(false);
+      setActiveDeleteMessage(null);
+    } catch (err) {
+      console.error("Delete message failed:", err);
+      alert(err.error || "Failed to delete message.");
     }
   };
 
@@ -605,14 +635,45 @@ function TeamDetail() {
                               alt={msg.sender_details?.username}
                               className="chat-message-avatar"
                             />
-                            <div className="chat-message-content">
+                            <div className="chat-message-content" style={msg.is_deleted ? { border: '1px dashed rgba(0, 0, 0, 0.08)', background: 'rgba(0, 0, 0, 0.01)', padding: '8px 12px', borderRadius: '8px' } : {}}>
                               <span className="chat-message-author">
                                 {msg.sender_details?.name || msg.sender_details?.username || "student"}
                               </span>
-                              <p className="chat-message-text">{msg.text}</p>
-                              <span className="chat-message-time">
-                                {formatChatMessageTime(msg.created_at)}
-                              </span>
+                              {msg.is_deleted ? (
+                                <p className="chat-message-text deleted-message-text" style={{ fontStyle: "italic", color: "var(--text-secondary)", display: 'flex', alignItems: 'center', gap: '6px', margin: '4px 0' }}>
+                                  🚫 {isMsgSenderMe 
+                                    ? "You deleted this message" 
+                                    : `${msg.sender_details?.name || msg.sender_details?.username} deleted this message`
+                                  }
+                                </p>
+                              ) : (
+                                <p className="chat-message-text">{msg.text}</p>
+                              )}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginTop: '2px' }}>
+                                <span className="chat-message-time">
+                                  {formatChatMessageTime(msg.created_at)}
+                                </span>
+                                {(isMsgSenderMe || isOwner || msg.is_deleted) && (
+                                  <button 
+                                    className="chat-message-delete-btn" 
+                                    onClick={() => triggerDeleteMessage(msg)} 
+                                    title="Delete message"
+                                    style={{
+                                      background: 'none',
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      fontSize: '11px',
+                                      opacity: 0.5,
+                                      transition: 'opacity 0.2s',
+                                      padding: 0
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0.5'}
+                                  >
+                                    🗑️
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         );
@@ -863,6 +924,67 @@ function TeamDetail() {
       >
         🤖 <span className="fab-label">AI Summary</span>
       </button>
+
+      {/* WhatsApp-style Delete Choice Modal */}
+      {showDeleteModal && activeDeleteMessage && (() => {
+        const ageMs = Date.now() - new Date(activeDeleteMessage.created_at).getTime();
+        const isUnder12Hours = ageMs < 12 * 60 * 60 * 1000;
+        const isMsgSenderMe = activeDeleteMessage.sender === currentUser?.user_id;
+        const isOwner = team.owner === currentUser?.user_id;
+        const canDeleteForEveryone = !activeDeleteMessage.is_deleted && isUnder12Hours && (isMsgSenderMe || isOwner);
+
+        return (
+          <div className="share-event-modal-overlay" style={{ zIndex: 3000 }} onClick={() => { setShowDeleteModal(false); setActiveDeleteMessage(null); }}>
+            <div className="share-event-modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '380px', padding: '24px', textAlign: 'center' }}>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '15px', color: 'var(--text-primary)' }}>Delete Message?</h3>
+              <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginBottom: '20px', lineHeight: '1.5' }}>
+                {canDeleteForEveryone 
+                  ? "Would you like to delete this message for yourself or for everyone in the group?"
+                  : activeDeleteMessage.is_deleted 
+                    ? "Are you sure you want to delete this message notice for yourself?"
+                    : "Are you sure you want to delete this message for yourself?"
+                }
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {canDeleteForEveryone && (
+                  <button 
+                    type="button" 
+                    className="btn-primary" 
+                    onClick={() => executeDeleteMessage(activeDeleteMessage.id, "everyone")}
+                    style={{ width: '100%', background: 'var(--neon-rose)', border: 'none', padding: '10px 0', borderRadius: '6px', fontWeight: '700', color: 'white' }}
+                  >
+                    Delete for Everyone
+                  </button>
+                )}
+                <button 
+                  type="button" 
+                  className={`btn-primary ${canDeleteForEveryone ? 'btn-secondary' : ''}`} 
+                  onClick={() => executeDeleteMessage(activeDeleteMessage.id, "me")}
+                  style={{ 
+                    width: '100%', 
+                    padding: '10px 0', 
+                    borderRadius: '6px',
+                    background: canDeleteForEveryone ? 'none' : 'var(--accent-primary)',
+                    border: canDeleteForEveryone ? '1px solid var(--border-color)' : 'none',
+                    color: canDeleteForEveryone ? 'var(--text-primary)' : 'white',
+                    fontWeight: canDeleteForEveryone ? 'normal' : '700'
+                  }}
+                >
+                  Delete for Me
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  onClick={() => { setShowDeleteModal(false); setActiveDeleteMessage(null); }}
+                  style={{ width: '100%', padding: '10px 0', borderRadius: '6px', border: 'none', background: 'none', color: 'var(--text-secondary)' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </>
   );
 }

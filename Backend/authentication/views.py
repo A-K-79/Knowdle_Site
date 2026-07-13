@@ -34,7 +34,8 @@ def login_view(request):
         token, _ = Token.objects.get_or_create(user=user)
         return Response({
             "token": token.key,
-            "username": user.username
+            "username": user.username,
+            "user_id": user.id
         })
 
     return Response({"error": "Invalid credentials"}, status=400)

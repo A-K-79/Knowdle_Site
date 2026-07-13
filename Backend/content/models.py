@@ -20,6 +20,7 @@ class Content(models.Model):
     )
 
     is_active = models.BooleanField(default=True)
+    is_followers_only = models.BooleanField(default=False)
     team = models.ForeignKey(
         "teams.Team",
         on_delete=models.CASCADE,
