@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'ai',
     "admin_panel",
     "search",
+    "teams",
+    "events",
 ]
 
 MIDDLEWARE = [

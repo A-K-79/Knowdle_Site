@@ -8,6 +8,8 @@ from .serializers import ContentSerializer
 from .permissions import IsOwnerOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from django.db.models import Q
+from teams.models import TeamType
 
 
 
@@ -33,13 +35,48 @@ class ContentDetailView(generics.RetrieveUpdateDestroyAPIView):
 # FEED
 # -------------------------
 class FeedView(generics.ListAPIView):
-
-    queryset = Content.objects.filter(
-        is_active=True
-    ).order_by("-created_at")
-
     serializer_class = ContentSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        
+        # Check if we are listing posts for a specific team
+        team_id = self.request.query_params.get("team_id")
+        if team_id:
+            # Only allow if user is a member of that team
+            return Content.objects.filter(
+                team_id=team_id,
+                team__members=user,
+                is_active=True
+            ).order_by("-created_at")
+
+        # Filter by category
+        category = self.request.query_params.get("category", "all").lower()
+        if category == "friends":
+            return Content.objects.filter(
+                team__team_type=TeamType.FRIENDS,
+                team__members=user,
+                is_active=True
+            ).order_by("-created_at")
+        elif category == "study":
+            return Content.objects.filter(
+                team__team_type=TeamType.STUDY,
+                team__members=user,
+                is_active=True
+            ).order_by("-created_at")
+        elif category == "professional":
+            return Content.objects.filter(
+                team__team_type=TeamType.PROFESSIONAL,
+                team__members=user,
+                is_active=True
+            ).order_by("-created_at")
+        else:
+            # "all" category: Public posts + user's joined team posts
+            return Content.objects.filter(
+                Q(team=None) | Q(team__members=user),
+                is_active=True
+            ).distinct().order_by("-created_at")
 
     filter_backends = [
         DjangoFilterBackend,
@@ -70,7 +107,6 @@ class LikePostView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, post_id):
-
         like, created = Like.objects.get_or_create(
             user=request.user,
             post_id=post_id
@@ -79,6 +115,21 @@ class LikePostView(APIView):
         if not created:
             like.delete()
             return Response({"message": "Unliked"})
+
+        try:
+            from users.models import Notification
+            post = Content.objects.get(id=post_id)
+            if post.owner != request.user:
+                sender_name = getattr(request.user, 'profile', None).name if hasattr(request.user, 'profile') else request.user.username
+                Notification.objects.create(
+                    recipient=post.owner,
+                    sender=request.user,
+                    notification_type="LIKE",
+                    text=f"{sender_name} liked your post",
+                    target_id=post_id
+                )
+        except Exception as e:
+            print("Like notification failed:", e)
 
         return Response({"message": "Liked"})
 
@@ -95,9 +146,10 @@ class CommentView(APIView):
         data = []
 
         for comment in comments:
+            profile = getattr(comment.user, 'profile', None)
             data.append({
-               
                 "username": comment.user.username,
+                "name": profile.name if profile else comment.user.username,
                 "text": comment.text,
                 "created_at": comment.created_at
             })
@@ -105,11 +157,26 @@ class CommentView(APIView):
         return Response(data)
 
     def post(self, request, post_id):
-        Comment.objects.create(
+        comment = Comment.objects.create(
             user=request.user,
             post_id=post_id,
             text=request.data["text"]
         )
+
+        try:
+            from users.models import Notification
+            post = Content.objects.get(id=post_id)
+            if post.owner != request.user:
+                sender_name = getattr(request.user, 'profile', None).name if hasattr(request.user, 'profile') else request.user.username
+                Notification.objects.create(
+                    recipient=post.owner,
+                    sender=request.user,
+                    notification_type="COMMENT",
+                    text=f"{sender_name} commented on your post: \"{comment.text[:30]}...\"",
+                    target_id=post_id
+                )
+        except Exception as e:
+            print("Comment notification failed:", e)
 
         return Response({"message": "Comment added"})
 
@@ -131,3 +198,15 @@ class SavePostView(APIView):
             return Response({"message": "Removed from saved"})
 
         return Response({"message": "Saved"})
+
+
+# -------------------------
+# SAVED POSTS LIST
+# -------------------------
+class SavedPostsListView(generics.ListAPIView):
+    serializer_class = ContentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        saved_ids = SavedPost.objects.filter(user=self.request.user).values_list("post_id", flat=True)
+        return Content.objects.filter(id__in=saved_ids, is_active=True).order_by("-created_at")

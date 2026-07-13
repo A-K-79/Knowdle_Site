@@ -20,6 +20,13 @@ class Content(models.Model):
     )
 
     is_active = models.BooleanField(default=True)
+    team = models.ForeignKey(
+        "teams.Team",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="posts"
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -6,6 +6,7 @@ from .views import (
     LikePostView,
     CommentView,
     SavePostView,
+    SavedPostsListView,
 )
 
 urlpatterns = [
@@ -13,6 +14,7 @@ urlpatterns = [
     path("posts/<int:pk>/", ContentDetailView.as_view(), name="post-detail"),
 
     path("feed/", FeedView.as_view(), name="feed"),
+    path("posts/saved/", SavedPostsListView.as_view(), name="saved-posts"),
 
     path("posts/<int:post_id>/like/", LikePostView.as_view(), name="like-post"),
     path("posts/<int:post_id>/comment/", CommentView.as_view(), name="comment-post"),
