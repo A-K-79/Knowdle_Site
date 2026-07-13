@@ -276,7 +276,7 @@ function Profile() {
               <div className="profile-left-col">
                 {profile.profile_picture ? (
                   <img
-                    src={`https://knowdle-site.onrender.com${profile.profile_picture}`}
+                    src={`http://127.0.0.1:8000${profile.profile_picture}`}
                     className="profile-dash-avatar"
                     alt="Profile"
                     onClick={() => setIsAvatarZoomed(true)}
@@ -359,7 +359,7 @@ function Profile() {
                 {profile.profile_picture ? (
                   <div className="edit-avatar-preview-box">
                     <img
-                      src={`https://knowdle-site.onrender.com${profile.profile_picture}`}
+                      src={`http://127.0.0.1:8000${profile.profile_picture}`}
                       className="profile-dash-avatar mini"
                       alt="Current Avatar"
                     />
@@ -454,7 +454,7 @@ function Profile() {
                     <img
                       src={
                         req.sender.profile_picture
-                          ? `https://knowdle-site.onrender.com${req.sender.profile_picture}`
+                          ? `http://127.0.0.1:8000${req.sender.profile_picture}`
                           : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23e4e6eb'/><circle cx='50' cy='35' r='20' fill='%238a8d91'/><path d='M20,80 C20,60 80,60 80,80' fill='%238a8d91'/></svg>"
                       }
                       alt={req.sender.username}
@@ -547,7 +547,7 @@ function Profile() {
               <button className="lightbox-close-btn" onClick={() => setIsAvatarZoomed(false)}>✕</button>
             </div>
             <img
-              src={`https://knowdle-site.onrender.com${profile.profile_picture}`}
+              src={`http://127.0.0.1:8000${profile.profile_picture}`}
               alt="Zoomed Profile"
               className="avatar-lightbox-img"
             />
