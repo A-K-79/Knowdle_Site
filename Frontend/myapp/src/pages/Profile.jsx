@@ -276,7 +276,7 @@ function Profile() {
               <div className="profile-left-col">
                 {profile.profile_picture ? (
                   <img
-                    src={`http://127.0.0.1:8000${profile.profile_picture}`}
+                    src={`https://knowdle-site.onrender.com${profile.profile_picture}`}
                     className="profile-dash-avatar"
                     alt="Profile"
                     onClick={() => setIsAvatarZoomed(true)}
@@ -359,7 +359,7 @@ function Profile() {
                 {profile.profile_picture ? (
                   <div className="edit-avatar-preview-box">
                     <img
-                      src={`http://127.0.0.1:8000${profile.profile_picture}`}
+                      src={`https://knowdle-site.onrender.com${profile.profile_picture}`}
                       className="profile-dash-avatar mini"
                       alt="Current Avatar"
                     />
@@ -547,7 +547,7 @@ function Profile() {
               <button className="lightbox-close-btn" onClick={() => setIsAvatarZoomed(false)}>✕</button>
             </div>
             <img
-              src={`http://127.0.0.1:8000${profile.profile_picture}`}
+              src={`https://knowdle-site.onrender.com${profile.profile_picture}`}
               alt="Zoomed Profile"
               className="avatar-lightbox-img"
             />
