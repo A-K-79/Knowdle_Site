@@ -630,7 +630,9 @@ function TeamDetail() {
                             <img
                               src={
                                 msg.sender_details?.profile_picture
-                                  ? `${API_URL}${msg.sender_details.profile_picture}`
+                                  ? msg.sender_details.profile_picture.startsWith("http")
+                                    ? msg.sender_details.profile_picture
+                                    : `${API_URL}${msg.sender_details.profile_picture}`
                                   : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23e4e6eb'/><circle cx='50' cy='35' r='20' fill='%238a8d91'/><path d='M20,80 C20,60 80,60 80,80' fill='%238a8d91'/></svg>"
                               }
                               alt={msg.sender_details?.username}
@@ -775,12 +777,14 @@ function TeamDetail() {
                             <img
                               src={
                                 user.profile_picture
-                                  ? `${API_URL}${user.profile_picture}`
+                                  ? user.profile_picture.startsWith("http")
+                                    ? user.profile_picture
+                                    : `${API_URL}${user.profile_picture}`
                                   : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23e4e6eb'/><circle cx='50' cy='35' r='20' fill='%238a8d91'/><path d='M20,80 C20,60 80,60 80,80' fill='%238a8d91'/></svg>"
                               }
                               alt={user.username}
                               className="invite-dropdown-avatar"
-                            />
+                              />
                             <span className="invite-dropdown-username">@{user.username}</span>
                           </div>
                         ))}
@@ -823,7 +827,9 @@ function TeamDetail() {
                           <img
                             src={
                               member.profile_picture
-                                ? `${API_URL}${member.profile_picture}`
+                                ? member.profile_picture.startsWith("http")
+                                  ? member.profile_picture
+                                  : `${API_URL}${member.profile_picture}`
                                 : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23e4e6eb'/><circle cx='50' cy='35' r='20' fill='%238a8d91'/><path d='M20,80 C20,60 80,60 80,80' fill='%238a8d91'/></svg>"
                             }
                             alt={member.username}
@@ -866,7 +872,13 @@ function TeamDetail() {
               <button className="lightbox-close-btn" onClick={() => setIsLogoZoomed(false)}>✕</button>
             </div>
             <img
-              src={team.team_logo.startsWith("http") ? team.team_logo : `${API_URL}${team.team_logo}`}
+              src={
+                team.team_logo
+                  ? team.team_logo.startsWith("http")
+                    ? team.team_logo
+                    : `${API_URL}${team.team_logo}`
+                  : "/default-team-logo.png"
+              }
               alt="Zoomed Team Logo"
               className="avatar-lightbox-img"
             />

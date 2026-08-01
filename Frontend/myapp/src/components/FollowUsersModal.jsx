@@ -75,7 +75,9 @@ function FollowUsersModal({ isOpen, onClose, title, username }) {
                   <img
                     src={
                       user.profile_picture
-                        ? `${API_URL}${user.profile_picture}`
+                        ? user.profile_picture.startsWith("http")
+                          ? user.profile_picture
+                          : `${API_URL}${user.profile_picture}`
                         : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23e4e6eb'/><circle cx='50' cy='35' r='20' fill='%238a8d91'/><path d='M20,80 C20,60 80,60 80,80' fill='%238a8d91'/></svg>"
                     }
                     alt={user.username}

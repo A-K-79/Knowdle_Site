@@ -120,7 +120,9 @@ function LiveSearch() {
                   <img
                     src={
                       user.profile_picture
-                        ? `${API_URL}${user.profile_picture}`
+                        ? user.profile_picture.startsWith("http")
+                          ? user.profile_picture
+                          : `${API_URL}${user.profile_picture}`
                         : DEFAULT_AVATAR
                     }
                     alt={user.username}
