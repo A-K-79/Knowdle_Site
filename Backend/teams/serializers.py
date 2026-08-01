@@ -16,7 +16,8 @@ class UserMinimalSerializer(serializers.ModelSerializer):
         try:
             profile = obj.profile
             if profile.profile_picture:
-                return profile.profile_picture.url
+                from config.utils import clean_cloudinary_url
+                return clean_cloudinary_url(profile.profile_picture.url)
         except Profile.DoesNotExist:
             pass
         return None
@@ -51,6 +52,13 @@ class TeamSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return obj.members.filter(id=request.user.id).exists()
         return False
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if ret.get('team_logo'):
+            from config.utils import clean_cloudinary_url
+            ret['team_logo'] = clean_cloudinary_url(ret['team_logo'])
+        return ret
 
 
 class TeamDetailSerializer(TeamSerializer):

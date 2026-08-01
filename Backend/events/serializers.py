@@ -19,3 +19,10 @@ class EventSerializer(serializers.ModelSerializer):
     def get_organizer_name(self, obj):
         profile = getattr(obj.organizer, 'profile', None)
         return profile.name if profile and profile.name else obj.organizer.username
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if ret.get('banner'):
+            from config.utils import clean_cloudinary_url
+            ret['banner'] = clean_cloudinary_url(ret['banner'])
+        return ret

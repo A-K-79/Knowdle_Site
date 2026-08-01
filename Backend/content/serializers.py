@@ -35,9 +35,19 @@ class ContentSerializer(serializers.ModelSerializer):
     def get_owner_profile_picture(self, obj):
         try:
             profile = obj.owner.profile
-            return profile.profile_picture.url if profile.profile_picture else None
+            if profile.profile_picture:
+                from config.utils import clean_cloudinary_url
+                return clean_cloudinary_url(profile.profile_picture.url)
         except Exception:
-            return None
+            pass
+        return None
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if ret.get('media_file'):
+            from config.utils import clean_cloudinary_url
+            ret['media_file'] = clean_cloudinary_url(ret['media_file'])
+        return ret
 
     def get_liked_by_user(self, obj):
         request = self.context.get("request")

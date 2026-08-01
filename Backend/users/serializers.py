@@ -10,6 +10,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
     following_list = serializers.SerializerMethodField()
+    profile_picture = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
@@ -38,6 +39,12 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_following_list(self, obj):
         return list(obj.user.following.values_list("following__username", flat=True))
 
+    def get_profile_picture(self, obj):
+        if obj.profile_picture:
+            from config.utils import clean_cloudinary_url
+            return clean_cloudinary_url(obj.profile_picture.url)
+        return None
+
 
 class UserMinimalSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source="profile.name", read_only=True)
@@ -51,7 +58,8 @@ class UserMinimalSerializer(serializers.ModelSerializer):
         try:
             profile = obj.profile
             if profile.profile_picture:
-                return profile.profile_picture.url
+                from config.utils import clean_cloudinary_url
+                return clean_cloudinary_url(profile.profile_picture.url)
         except Exception:
             pass
         return None
