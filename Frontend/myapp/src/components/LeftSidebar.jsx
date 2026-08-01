@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getProfile } from "../services/profileService";
 import "../styles/Sidebar.css";
 import { useNavigate, useLocation } from "react-router-dom";
+import { API_URL } from "../config";
 
 function LeftSidebar() {
     const [profile, setProfile] = useState(null);
@@ -57,7 +58,7 @@ function LeftSidebar() {
                 <div className="profile-image-container">
                     {profile.profile_picture ? (
                         <img
-                            src={`http://127.0.0.1:8000${profile.profile_picture}`}
+                            src={`${API_URL}${profile.profile_picture}`}
                             alt="Profile"
                             className="profile-image"
                         />

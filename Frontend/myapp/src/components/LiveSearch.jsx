@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { liveSearch } from "../services/searchService";
 import "../styles/LiveSearch.css";
+import { API_URL } from "../config";
 
 const DEFAULT_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23e4e6eb'/><circle cx='50' cy='35' r='20' fill='%238a8d91'/><path d='M20,80 C20,60 80,60 80,80' fill='%238a8d91'/></svg>";
 
@@ -119,7 +120,7 @@ function LiveSearch() {
                   <img
                     src={
                       user.profile_picture
-                        ? `http://127.0.0.1:8000${user.profile_picture}`
+                        ? `${API_URL}${user.profile_picture}`
                         : DEFAULT_AVATAR
                     }
                     alt={user.username}

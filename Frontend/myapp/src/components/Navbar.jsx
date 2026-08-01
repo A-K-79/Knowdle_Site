@@ -5,6 +5,7 @@ import { getProfile } from "../services/profileService";
 import LiveSearch from "./LiveSearch";
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, clearAllNotifications } from "../services/notificationService";
 import "./../styles/Navbar.css";
+import { API_URL } from "../config";
 
 function Navbar({ onOpenSidebar }) {
     const navigate = useNavigate();
@@ -33,7 +34,7 @@ function Navbar({ onOpenSidebar }) {
                     localStorage.setItem("userId", profile.user_id.toString());
                 }
                 if (profile.profile_picture) {
-                    setAvatarUrl(`http://127.0.0.1:8000${profile.profile_picture}`);
+                    setAvatarUrl(`${API_URL}${profile.profile_picture}`);
                 }
             } catch (err) {
                 console.log("Failed to fetch profile in navbar:", err);
@@ -262,7 +263,7 @@ function Navbar({ onOpenSidebar }) {
                                             <img
                                                 src={
                                                     notif.sender_details?.profile_picture
-                                                        ? `http://127.0.0.1:8000${notif.sender_details.profile_picture}`
+                                                        ? `${API_URL}${notif.sender_details.profile_picture}`
                                                         : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23e4e6eb'/><circle cx='50' cy='35' r='20' fill='%238a8d91'/><path d='M20,80 C20,60 80,60 80,80' fill='%238a8d91'/></svg>"
                                                 }
                                                 alt="Sender"

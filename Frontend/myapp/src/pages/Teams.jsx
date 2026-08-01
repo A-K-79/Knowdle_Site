@@ -10,7 +10,7 @@ import {
   rejectTeamRequest,
 } from "../services/teamService";
 import "../styles/Teams.css";
-
+import { API_URL } from "../config";
 function Teams() {
   const navigate = useNavigate();
   const [teams, setTeams] = useState([]);
@@ -251,14 +251,14 @@ function Teams() {
                     <div className="team-card-header">
                       {team.team_logo ? (
                         <img
-                          src={team.team_logo.startsWith("http") ? team.team_logo : `http://127.0.0.1:8000${team.team_logo}`}
+                          src={team.team_logo.startsWith("http") ? team.team_logo : `${API_URL}${team.team_logo}`}
                           alt={team.name}
                           className="team-card-logo"
                           style={{ cursor: "zoom-in" }}
                           onClick={(e) => {
                             e.stopPropagation();
                             setZoomedLogo({
-                              url: team.team_logo.startsWith("http") ? team.team_logo : `http://127.0.0.1:8000${team.team_logo}`,
+                              url: team.team_logo.startsWith("http") ? team.team_logo : `${API_URL}${team.team_logo}`,
                               name: team.name
                             });
                           }}

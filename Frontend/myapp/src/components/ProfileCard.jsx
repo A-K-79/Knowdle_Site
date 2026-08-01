@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { followUser, unfollowUser } from "../services/followService.jsx";
+import { API_URL } from "../config";
 
 function ProfileCard({ user, followingList = [], onFollowToggle }) {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ function ProfileCard({ user, followingList = [], onFollowToggle }) {
   const getAvatarUrl = (path) => {
     if (!path) return null;
     if (path.startsWith("http://") || path.startsWith("https://")) return path;
-    return `http://127.0.0.1:8000${path}`;
+    return `${API_URL}${path}`;
   };
 
   const isMe = user.username === currentUsername;

@@ -6,6 +6,7 @@ import { getEvents, createEvent, deleteEvent } from "../services/eventService";
 import { getTeams } from "../services/teamService";
 import { createPost } from "../services/postService";
 import "../styles/Events.css";
+import { API_URL } from "../config";
 
 function Events() {
   const [events, setEvents] = useState([]);
@@ -162,7 +163,7 @@ function Events() {
       try {
         const bannerUrl = selectedEventToShare.banner.startsWith("http")
           ? selectedEventToShare.banner
-          : `http://127.0.0.1:8000${selectedEventToShare.banner}`;
+          : `${API_URL}${selectedEventToShare.banner}`;
         const res = await fetch(bannerUrl);
         const blob = await res.blob();
         const file = new File([blob], "event_banner.jpg", { type: blob.type });
@@ -326,7 +327,7 @@ function Events() {
                         <div className="event-banner-container">
                           {ev.banner ? (
                             <img
-                              src={ev.banner.startsWith("http") ? ev.banner : `http://127.0.0.1:8000${ev.banner}`}
+                              src={ev.banner.startsWith("http") ? ev.banner : `API_URL${ev.banner}`}
                               alt={ev.title}
                               className="event-banner-img"
                             />
