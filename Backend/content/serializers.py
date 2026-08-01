@@ -43,11 +43,29 @@ class ContentSerializer(serializers.ModelSerializer):
         return None
 
     def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        if ret.get('media_file'):
-            from config.utils import clean_cloudinary_url
-            ret['media_file'] = clean_cloudinary_url(ret['media_file'])
-        return ret
+        try:
+            ret = super().to_representation(instance)
+            if ret.get('media_file'):
+                from config.utils import clean_cloudinary_url
+                ret['media_file'] = clean_cloudinary_url(ret['media_file'])
+            return ret
+        except Exception:
+            ret = {}
+            for field in self.fields:
+                if field == 'media_file':
+                    try:
+                        ret[field] = instance.media_file.url if instance.media_file else None
+                    except Exception:
+                        ret[field] = f"/media/{instance.media_file.name}" if instance.media_file and instance.media_file.name else None
+                else:
+                    try:
+                        ret[field] = self.fields[field].to_representation(getattr(instance, field))
+                    except Exception:
+                        ret[field] = None
+            if ret.get('media_file'):
+                from config.utils import clean_cloudinary_url
+                ret['media_file'] = clean_cloudinary_url(ret['media_file'])
+            return ret
 
     def get_liked_by_user(self, obj):
         request = self.context.get("request")
@@ -86,7 +104,7 @@ class ContentSerializer(serializers.ModelSerializer):
             extension = os.path.splitext(media_file.name)[1].lower()
 
             image_extensions = [".jpg", ".jpeg", ".png", ".webp"]
-            video_extensions = [".mp4", ".mov", ".avi", ".mkv"]
+            video_extensions = [".mp4", ".mov", ".avi", ".mkv", ".webm"]
 
             if media_type == "IMAGE" and extension not in image_extensions:
                 raise serializers.ValidationError("Only image files are allowed.")

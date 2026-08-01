@@ -54,11 +54,29 @@ class TeamSerializer(serializers.ModelSerializer):
         return False
 
     def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        if ret.get('team_logo'):
-            from config.utils import clean_cloudinary_url
-            ret['team_logo'] = clean_cloudinary_url(ret['team_logo'])
-        return ret
+        try:
+            ret = super().to_representation(instance)
+            if ret.get('team_logo'):
+                from config.utils import clean_cloudinary_url
+                ret['team_logo'] = clean_cloudinary_url(ret['team_logo'])
+            return ret
+        except Exception:
+            ret = {}
+            for field in self.fields:
+                if field == 'team_logo':
+                    try:
+                        ret[field] = instance.team_logo.url if instance.team_logo else None
+                    except Exception:
+                        ret[field] = f"/media/{instance.team_logo.name}" if instance.team_logo and instance.team_logo.name else None
+                else:
+                    try:
+                        ret[field] = self.fields[field].to_representation(getattr(instance, field))
+                    except Exception:
+                        ret[field] = None
+            if ret.get('team_logo'):
+                from config.utils import clean_cloudinary_url
+                ret['team_logo'] = clean_cloudinary_url(ret['team_logo'])
+            return ret
 
 
 class TeamDetailSerializer(TeamSerializer):

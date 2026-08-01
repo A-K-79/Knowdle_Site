@@ -21,8 +21,26 @@ class EventSerializer(serializers.ModelSerializer):
         return profile.name if profile and profile.name else obj.organizer.username
 
     def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        if ret.get('banner'):
-            from config.utils import clean_cloudinary_url
-            ret['banner'] = clean_cloudinary_url(ret['banner'])
-        return ret
+        try:
+            ret = super().to_representation(instance)
+            if ret.get('banner'):
+                from config.utils import clean_cloudinary_url
+                ret['banner'] = clean_cloudinary_url(ret['banner'])
+            return ret
+        except Exception:
+            ret = {}
+            for field in self.fields:
+                if field == 'banner':
+                    try:
+                        ret[field] = instance.banner.url if instance.banner else None
+                    except Exception:
+                        ret[field] = f"/media/{instance.banner.name}" if instance.banner and instance.banner.name else None
+                else:
+                    try:
+                        ret[field] = self.fields[field].to_representation(getattr(instance, field))
+                    except Exception:
+                        ret[field] = None
+            if ret.get('banner'):
+                from config.utils import clean_cloudinary_url
+                ret['banner'] = clean_cloudinary_url(ret['banner'])
+            return ret

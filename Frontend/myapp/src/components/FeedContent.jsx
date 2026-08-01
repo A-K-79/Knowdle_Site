@@ -202,7 +202,21 @@ const getVideoDuration = (file) => {
       fetchFeed();
     } catch (err) {
       console.error(err);
-      setCreateError(err.error || "Failed to publish post.");
+      let errorMsg = "Failed to publish post.";
+      if (err) {
+        if (err.error) errorMsg = err.error;
+        else if (err.non_field_errors) errorMsg = Array.isArray(err.non_field_errors) ? err.non_field_errors[0] : err.non_field_errors;
+        else if (typeof err === "object") {
+          for (const key in err) {
+            const val = err[key];
+            errorMsg = Array.isArray(val) ? `${key}: ${val[0]}` : `${key}: ${val}`;
+            break;
+          }
+        } else if (typeof err === "string") {
+          errorMsg = err;
+        }
+      }
+      setCreateError(errorMsg);
     } finally {
       setCreateLoading(false);
     }

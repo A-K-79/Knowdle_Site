@@ -10,7 +10,6 @@ class ProfileSerializer(serializers.ModelSerializer):
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
     following_list = serializers.SerializerMethodField()
-    profile_picture = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
@@ -39,11 +38,30 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_following_list(self, obj):
         return list(obj.user.following.values_list("following__username", flat=True))
 
-    def get_profile_picture(self, obj):
-        if obj.profile_picture:
-            from config.utils import clean_cloudinary_url
-            return clean_cloudinary_url(obj.profile_picture.url)
-        return None
+    def to_representation(self, instance):
+        try:
+            ret = super().to_representation(instance)
+            if ret.get('profile_picture'):
+                from config.utils import clean_cloudinary_url
+                ret['profile_picture'] = clean_cloudinary_url(ret['profile_picture'])
+            return ret
+        except Exception:
+            ret = {}
+            for field in self.fields:
+                if field == 'profile_picture':
+                    try:
+                        ret[field] = instance.profile_picture.url if instance.profile_picture else None
+                    except Exception:
+                        ret[field] = f"/media/{instance.profile_picture.name}" if instance.profile_picture and instance.profile_picture.name else None
+                else:
+                    try:
+                        ret[field] = self.fields[field].to_representation(getattr(instance, field))
+                    except Exception:
+                        ret[field] = None
+            if ret.get('profile_picture'):
+                from config.utils import clean_cloudinary_url
+                ret['profile_picture'] = clean_cloudinary_url(ret['profile_picture'])
+            return ret
 
 
 class UserMinimalSerializer(serializers.ModelSerializer):
