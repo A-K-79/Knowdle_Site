@@ -102,6 +102,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #         "NAME": BASE_DIR / "db.sqlite3",
 #     }
 # }
+DATABASE_URL="postgresql://knowdle_db_user:17bQCSlMBWYspfzpvhrM2wlZmzeh86jc@dpg-d9moppu417fc73bsepe0-a/knowdle_db"
 
 DATABASES = {
     "default": dj_database_url.config(
@@ -109,7 +110,6 @@ DATABASES = {
         conn_max_age=600,
     )
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
