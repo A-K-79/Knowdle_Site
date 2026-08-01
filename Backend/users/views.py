@@ -31,6 +31,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Profile
 from .serializers import ProfileSerializer
+from django.conf import settings
+import os
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -50,6 +52,8 @@ def get_profile(request):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_profile(request):
+    print("FILES:", request.FILES)
+    print("DATA:", request.data)
     profile = Profile.objects.get(user=request.user)
 
     if request.data.get("remove_picture") == "true":
@@ -64,9 +68,31 @@ def update_profile(request):
 
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data)
 
+        # Reload the profile from the database
+        profile.refresh_from_db()
+
+        print("=" * 50)
+        print("MEDIA_ROOT:", settings.MEDIA_ROOT)
+        print("FILES:", request.FILES)
+        print("DATA:", request.data)
+
+        if profile.profile_picture:
+            print("FILE NAME:", profile.profile_picture.name)
+            print("FILE URL:", profile.profile_picture.url)
+            print("FILE PATH:", profile.profile_picture.path)
+            print("EXISTS:", os.path.exists(profile.profile_picture.path))
+        else:
+            print("NO PROFILE PICTURE SAVED")
+
+        print("=" * 50)
+
+        return Response(ProfileSerializer(profile).data)
+
+    print("Serializer Errors:", serializer.errors)
     return Response(serializer.errors, status=400)
+
+    # return Response(serializer.errors, status=400)
 
 
 from .models import Notification
