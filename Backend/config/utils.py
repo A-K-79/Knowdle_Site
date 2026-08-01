@@ -1,6 +1,6 @@
 import re
 
-def clean_cloudinary_url(url):
+def clean_cloudinary_url(url, media_type=None):
     if not url:
         return url
         
@@ -14,11 +14,18 @@ def clean_cloudinary_url(url):
             
             # Clean up double slashes without colon: https// -> https://
             if cloudinary_part.startswith("https//"):
-                return "https://" + cloudinary_part[7:]
-            if cloudinary_part.startswith("http//"):
-                return "http://" + cloudinary_part[6:]
-            if cloudinary_part.startswith("//"):
-                return "https:" + cloudinary_part
+                cloudinary_part = "https://" + cloudinary_part[7:]
+            elif cloudinary_part.startswith("http//"):
+                cloudinary_part = "http://" + cloudinary_part[6:]
+            elif cloudinary_part.startswith("//"):
+                cloudinary_part = "https:" + cloudinary_part
+            
+            if media_type == "VIDEO":
+                if "/image/upload" in cloudinary_part:
+                    cloudinary_part = cloudinary_part.replace("/image/upload", "/video/upload")
+                elif "/raw/upload" in cloudinary_part:
+                    cloudinary_part = cloudinary_part.replace("/raw/upload", "/video/upload")
+                    
             return cloudinary_part
             
     return url

@@ -47,7 +47,7 @@ class ContentSerializer(serializers.ModelSerializer):
             ret = super().to_representation(instance)
             if ret.get('media_file'):
                 from config.utils import clean_cloudinary_url
-                ret['media_file'] = clean_cloudinary_url(ret['media_file'])
+                ret['media_file'] = clean_cloudinary_url(ret['media_file'], media_type=instance.media_type)
             return ret
         except Exception:
             ret = {}
@@ -64,7 +64,7 @@ class ContentSerializer(serializers.ModelSerializer):
                         ret[field] = None
             if ret.get('media_file'):
                 from config.utils import clean_cloudinary_url
-                ret['media_file'] = clean_cloudinary_url(ret['media_file'])
+                ret['media_file'] = clean_cloudinary_url(ret['media_file'], media_type=instance.media_type)
             return ret
 
     def get_liked_by_user(self, obj):
