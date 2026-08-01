@@ -22,3 +22,16 @@ def clean_cloudinary_url(url):
             return cloudinary_part
             
     return url
+
+from cloudinary_storage.storage import MediaCloudinaryStorage
+
+class DynamicMediaCloudinaryStorage(MediaCloudinaryStorage):
+    def _get_resource_type(self, name):
+        if not name:
+            return 'image'
+        ext = name.split('.')[-1].lower()
+        if ext in ['mp4', 'mov', 'avi', 'mkv', 'webm', '3gp', 'wmv', 'flv']:
+            return 'video'
+        elif ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'svg', 'ico']:
+            return 'image'
+        return 'raw'

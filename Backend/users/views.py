@@ -49,7 +49,7 @@ def get_profile(request):
     serializer = ProfileSerializer(profile)
     return Response(serializer.data)
 
-@api_view(['PUT'])
+@api_view(['PUT', 'POST'])
 @permission_classes([IsAuthenticated])
 def update_profile(request):
     print("FILES:", request.FILES)

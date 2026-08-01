@@ -12,7 +12,7 @@ export const getProfile = async (username = "") => {
 
 export const updateProfile = async (formData) => {
     try {
-        const response = await API.put("/api/profile/update/", formData, {
+        const response = await API.post("/api/profile/update/", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
@@ -25,7 +25,7 @@ export const updateProfile = async (formData) => {
 
 export const removeProfilePicture = async () => {
     try {
-        const response = await API.put("/api/profile/update/", { remove_picture: "true" });
+        const response = await API.post("/api/profile/update/", { remove_picture: "true" });
         return response.data;
     } catch (error) {
         throw error.response?.data || { error: "Failed to remove profile picture" };
