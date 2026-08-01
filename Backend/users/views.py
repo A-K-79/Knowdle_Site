@@ -54,34 +54,32 @@ def get_profile(request):
 def update_profile(request):
     print("FILES:", request.FILES)
     print("DATA:", request.data)
+
     profile = Profile.objects.get(user=request.user)
 
+    # Remove profile picture
     if request.data.get("remove_picture") == "true":
         if profile.profile_picture:
             profile.profile_picture.delete(save=False)
             profile.profile_picture = None
             profile.save()
-        serializer = ProfileSerializer(profile)
-        return Response(serializer.data)
+
+        return Response(ProfileSerializer(profile).data)
 
     serializer = ProfileSerializer(profile, data=request.data, partial=True)
 
     if serializer.is_valid():
         serializer.save()
 
-        # Reload the profile from the database
         profile.refresh_from_db()
 
         print("=" * 50)
-        print("MEDIA_ROOT:", settings.MEDIA_ROOT)
         print("FILES:", request.FILES)
         print("DATA:", request.data)
 
         if profile.profile_picture:
             print("FILE NAME:", profile.profile_picture.name)
             print("FILE URL:", profile.profile_picture.url)
-            print("FILE PATH:", profile.profile_picture.path)
-            print("EXISTS:", os.path.exists(profile.profile_picture.path))
         else:
             print("NO PROFILE PICTURE SAVED")
 
@@ -91,8 +89,6 @@ def update_profile(request):
 
     print("Serializer Errors:", serializer.errors)
     return Response(serializer.errors, status=400)
-
-    # return Response(serializer.errors, status=400)
 
 
 from .models import Notification
