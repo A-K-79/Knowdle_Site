@@ -6,7 +6,7 @@ import { getEvents, createEvent, deleteEvent } from "../services/eventService";
 import { getTeams } from "../services/teamService";
 import { createPost } from "../services/postService";
 import "../styles/Events.css";
-import { API_URL } from "../config";
+import { getMediaUrl } from "../config";
 
 function Events() {
   const [events, setEvents] = useState([]);
@@ -161,9 +161,7 @@ function Events() {
 
     if (selectedEventToShare.banner) {
       try {
-        const bannerUrl = selectedEventToShare.banner.startsWith("http")
-          ? selectedEventToShare.banner
-          : `${API_URL}${selectedEventToShare.banner}`;
+        const bannerUrl = getMediaUrl(selectedEventToShare.banner);
         const res = await fetch(bannerUrl);
         const blob = await res.blob();
         const file = new File([blob], "event_banner.jpg", { type: blob.type });
@@ -327,7 +325,7 @@ function Events() {
                         <div className="event-banner-container">
                           {ev.banner ? (
                             <img
-                              src={ev.banner.startsWith("http") ? ev.banner : `API_URL${ev.banner}`}
+                              src={getMediaUrl(ev.banner)}
                               alt={ev.title}
                               className="event-banner-img"
                             />

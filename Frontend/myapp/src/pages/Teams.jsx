@@ -10,7 +10,7 @@ import {
   rejectTeamRequest,
 } from "../services/teamService";
 import "../styles/Teams.css";
-import { API_URL } from "../config";
+import { getMediaUrl } from "../config";
 function Teams() {
   const navigate = useNavigate();
   const [teams, setTeams] = useState([]);
@@ -251,24 +251,14 @@ function Teams() {
                     <div className="team-card-header">
                       {team.team_logo ? (
                         <img
-                          src={
-                            team.team_logo
-                              ? team.team_logo.startsWith("http")
-                                ? team.team_logo
-                                : `${API_URL}${team.team_logo}`
-                              : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23e4e6eb'/><text x='50' y='55' text-anchor='middle' font-size='14' fill='%238a8d91'>No Logo</text></svg>"
-                          }
+                          src={getMediaUrl(team.team_logo) || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23e4e6eb'/><text x='50' y='55' text-anchor='middle' font-size='14' fill='%238a8d91'>No Logo</text></svg>"}
                           alt={team.name}
                           className="team-card-logo"
                           style={{ cursor: "zoom-in" }}
                           onClick={(e) => {
                             e.stopPropagation();
                             setZoomedLogo({
-                              url: team.team_logo
-                                ? team.team_logo.startsWith("http")
-                                  ? team.team_logo
-                                  : `${API_URL}${team.team_logo}`
-                                : "",
+                              url: getMediaUrl(team.team_logo),
                               name: team.name,
                             });
                           }}

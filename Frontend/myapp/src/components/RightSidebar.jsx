@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { summarizeNotes } from "../services/aiService.jsx";
 import "../styles/Sidebar.css";
-import { API_URL } from "../config";
+
 
 function RightSidebar({ isOpen, onClose }) {
     const navigate = useNavigate();

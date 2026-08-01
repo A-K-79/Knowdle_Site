@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toggleLike, toggleSave, deletePost, deletePostAsAdmin } from "../services/postService.jsx";
 import CommentSection from "./CommentSection";
-import { API_URL } from "../config";
+import { getMediaUrl } from "../config";
 
 function PostCard({ post, onDelete, onSaveToggle, isAdminView = false }) {
   const navigate = useNavigate();
@@ -65,11 +65,7 @@ function PostCard({ post, onDelete, onSaveToggle, isAdminView = false }) {
     }
   };
 
-  const getMediaUrl = (path) => {
-    if (!path) return "";
-    if (path.startsWith("http://") || path.startsWith("https://")) return path;
-    return `${API_URL}${path}`;
-  };
+
 
   const formatDate = (dateString) => {
     const d = new Date(dateString);

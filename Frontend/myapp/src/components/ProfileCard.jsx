@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { followUser, unfollowUser } from "../services/followService.jsx";
-import { API_URL } from "../config";
+import { getMediaUrl } from "../config";
 
 function ProfileCard({ user, followingList = [], onFollowToggle }) {
   const navigate = useNavigate();
@@ -38,11 +38,7 @@ function ProfileCard({ user, followingList = [], onFollowToggle }) {
     }
   };
 
-  const getAvatarUrl = (path) => {
-    if (!path) return null;
-    if (path.startsWith("http://") || path.startsWith("https://")) return path;
-    return `${API_URL}${path}`;
-  };
+
 
   const isMe = user.username === currentUsername;
 
@@ -56,7 +52,7 @@ function ProfileCard({ user, followingList = [], onFollowToggle }) {
         <div onClick={handleProfileClick} style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer", flex: 1 }}>
           {user.profile_picture ? (
             <img
-              src={getAvatarUrl(user.profile_picture)}
+              src={getMediaUrl(user.profile_picture)}
               alt={user.name}
               className="profile-search-avatar"
             />
