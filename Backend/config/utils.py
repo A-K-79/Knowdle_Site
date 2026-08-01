@@ -29,9 +29,11 @@ class DynamicMediaCloudinaryStorage(MediaCloudinaryStorage):
     def _get_resource_type(self, name):
         if not name:
             return 'image'
-        ext = name.split('.')[-1].lower()
-        if ext in ['mp4', 'mov', 'avi', 'mkv', 'webm', '3gp', 'wmv', 'flv']:
-            return 'video'
-        elif ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'svg', 'ico']:
-            return 'image'
-        return 'raw'
+        parts = name.split('.')
+        if len(parts) > 1:
+            ext = parts[-1].lower()
+            if ext in ['mp4', 'mov', 'avi', 'mkv', 'webm', '3gp', 'wmv', 'flv']:
+                return 'video'
+            elif ext in ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', 'txt', 'csv']:
+                return 'raw'
+        return 'image'
