@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = 'django-insecure-66_p@+zz$)bbf+f%1uw5kz5ixt3_eyna-br+6!&)*cqmzqd^$r'
-SECRET_KEY = os.getenv('django-insecure-66_p@+zz$)bbf+f%1uw5kz5ixt3_eyna-br+6!&)*cqmzqd^$r')
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
@@ -102,8 +102,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #         "NAME": BASE_DIR / "db.sqlite3",
 #     }
 # }
-DATABASE_URL="postgresql://knowdle_db_user:17bQCSlMBWYspfzpvhrM2wlZmzeh86jc@dpg-d9moppu417fc73bsepe0-a/knowdle_db"
-
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
